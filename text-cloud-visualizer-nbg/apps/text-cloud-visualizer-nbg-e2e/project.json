@@ -1,0 +1,9 @@
+{
+  "name": "text-cloud-visualizer-nbg-e2e",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "apps/text-cloud-visualizer-nbg-e2e/src",
+  "implicitDependencies": ["text-cloud-visualizer-nbg"],
+  "// targets": "to see all targets run: nx show project text-cloud-visualizer-nbg-e2e --web",
+  "targets": {}
+}
