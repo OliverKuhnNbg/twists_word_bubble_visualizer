@@ -14,7 +14,14 @@
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "strict": false,
-    "paths": {}
+    "paths": {
+      "@text-cloud-visualizer-nbg/core": ["./libs/core/src/index.ts"],
+      "@text-cloud-visualizer-nbg/data-access": [
+        "./libs/data-access/src/index.ts"
+      ],
+      "@text-cloud-visualizer-nbg/ui": ["./libs/shared/ui/src/index.ts"],
+      "@text-cloud-visualizer-nbg/cloud": ["./libs/feature/cloud/src/index.ts"]
+    }
   },
   "exclude": ["node_modules", "tmp"]
 }
