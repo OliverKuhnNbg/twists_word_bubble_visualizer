@@ -14,11 +14,36 @@ export default [
         'error',
         {
           enforceBuildableLibDependency: true,
-          allow: ['^.*/eslint(\\.base)?\\.config\\.[cm]?[jt]s$'],
+          allow: [],
           depConstraints: [
             {
-              sourceTag: '*',
-              onlyDependOnLibsWithTags: ['*'],
+              sourceTag: 'type:app',
+              onlyDependOnLibsWithTags: [
+                'type:core',
+                'type:feature',
+                'type:ui',
+                'type:data-access',
+              ],
+            },
+            {
+              sourceTag: 'type:feature',
+              onlyDependOnLibsWithTags: [
+                'type:ui',
+                'type:data-access',
+                'type:core',
+              ],
+            },
+            {
+              sourceTag: 'type:data-access',
+              onlyDependOnLibsWithTags: ['type:core'],
+            },
+            {
+              sourceTag: 'type:ui',
+              onlyDependOnLibsWithTags: [], // Die UI ist dumm und darf NIEMANDEN importieren!
+            },
+            {
+              sourceTag: 'type:core',
+              onlyDependOnLibsWithTags: [], // Core ist autark (außer externen NPM-Paketen)
             },
           ],
         },

@@ -1,1 +1,8 @@
-/* You can add global styles to this file, and also import other style files */
+/* global styles of this application & also import other style files */
+
+// 1. Bootstrap (komplette Styles) laden
+@use 'bootstrap/scss/bootstrap';
+
+// 2. Phosphor Icons laden (da wir vorhin @phosphor-icons/core installiert haben)
+//@import '@phosphor-icons/web/src/regular/style.css';
+// (Für reine .css Dateien innerhalb von SCSS ist @import beim esbuild-Bundler oft noch zuverlässiger als @use)

@@ -1,2 +1,14 @@
-<app-nx-welcome></app-nx-welcome>
+<main class="container mt-5">
+  <div class="card p-4 shadow-sm">
+    <h1 class="mb-3">Text Cloud Visualizer NBG</h1>
+
+    <!-- Greift reaktiv (Zoneless) auf den Store-State zu -->
+    <p>App Initialized: <strong>{{ store.isInitialized() }}</strong></p>
+
+    <!-- Triggert die Store-Methode -->
+    <button class="btn btn-primary mt-2" (click)="store.setInitialized()">
+      <i class="ph ph-check-circle me-2"></i> Initialisieren
+    </button>
+  </div>
+</main>
 <router-outlet></router-outlet>
