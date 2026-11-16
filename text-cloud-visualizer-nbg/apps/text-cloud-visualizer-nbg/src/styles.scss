@@ -4,5 +4,8 @@
 @use 'bootstrap/scss/bootstrap';
 
 // 2. Phosphor Icons laden (da wir vorhin @phosphor-icons/core installiert haben)
-//@import '@phosphor-icons/web/src/regular/style.css';
-// (Für reine .css Dateien innerhalb von SCSS ist @import beim esbuild-Bundler oft noch zuverlässiger als @use)
+//@use '@phosphor-icons/web/src/regular/style.css';
+@use '@phosphor-icons/web/regular';
+@use '@phosphor-icons/web/bold';
+@use '@phosphor-icons/web/duotone';
+// (Für reine .css Dateien innerhalb von SCSS ist @use beim esbuild-Bundler oft noch zuverlässiger als @use)
