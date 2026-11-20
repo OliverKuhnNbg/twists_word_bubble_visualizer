@@ -1,102 +1,151 @@
-# TextCloudVisualizerNbg
+# Twist`s Text Cloud Visualizer NBG
 
-<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
+Dieses Projekt ist eine interaktive Text Cloud Visualisierung. Es wird in einem Nx Monorepo mit einer strengen Domain-Driven Design (DDD) Architektur entwickelt.
 
-✨ Your new, shiny [Nx workspace](https://nx.dev) is ready ✨.
+## Tech-Stack
 
-[Learn more about this workspace setup and its capabilities](https://nx.dev/getting-started/tutorials/angular-monorepo-tutorial?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
+Das Fundament der Anwendung basiert auf modernen und hochperformanten Web-Technologien:
 
-## Run tasks
+- **Framework:** Angular 17+ (Zoneless / `provideExperimentalZonelessChangeDetection`)
+- **State Management:** NgRx SignalStore
+- **Visualisierung & Rendering:** D3.js (`d3-cloud`)
+- **Dokumenten-Verarbeitung:** PDF.js (`pdfjs-dist`)
+- **UI & Styling:** Bootstrap (SCSS) & Phosphor Icons
+- **Testing & Tooling:** Nx, Esbuild, Jest (Unit), Playwright (E2E), Prettier
 
-To run the dev server for your app, use:
+## Lokale Entwicklung & Nx-Befehle
 
-```sh
+Alle Befehle werden im Workspace-Root (`text-cloud-visualizer-nbg`) ausgeführt:
+
+### Quickstart (Dev-Server)
+
+```bash
 npx nx serve text-cloud-visualizer-nbg
 ```
 
-To create a production bundle:
+Sobald der Build abgeschlossen ist, läuft der Entwicklungsserver standardmäßig unter **`http://localhost:4200`**.
 
-```sh
+### Weitere nützliche Nx-Befehle
+
+```bash
+# Produktions-Build erstellen
 npx nx build text-cloud-visualizer-nbg
+
+# Unit-Tests (Jest) für die App oder alle betroffenen Projekte ausführen
+npx nx test text-cloud-visualizer-nbg
+npx nx affected -t test
+
+# End-to-End-Tests (Playwright) starten
+npx nx e2e text-cloud-visualizer-nbg-e2e
+
+# Linting & Code-Formatierung prüfen
+npx nx affected -t lint
+
+# Abhängigkeitsgraph der DDD-Schichten visualisieren
+npx nx graph
 ```
 
-To see all available targets to run for a project, run:
+---
 
-```sh
-npx nx show project text-cloud-visualizer-nbg
+## Domain-Driven Design (DDD) Ordnerstruktur
+
+Dieses Projekt folgt einer strikten DDD-Architektur. Das Ziel ist eine saubere Trennung von Zuständigkeiten, maximale Skalierbarkeit und die strikte Vermeidung von zirkulären Abhängigkeiten.
+
+### Funktion der Architekturschichten
+
+- **`apps/`**: Enthält lediglich das App-Routing, die Root-Komponente und die `app.config.ts`. Hier findet **keine** Business-Logik statt. Die App dient nur als Hülle, die Features lädt.
+- **`libs/core/`**: Globale Singleton-Services, App-weiter State (z. B. der Root NgRx SignalStore / `ThemeStore`), globale Interceptors und Konfigurationen. Wird ausschließlich in der `app.config.ts` oder Root-App geladen, niemals in anderen Libraries.
+- **`libs/shared/ui/`**: Rein präsentative, "dumme" UI-Komponenten (Buttons, Layout-Wrapper, Modals, Theme-Toggle), die überall in der App wiederverwendet werden. Diese Komponenten haben keinen eigenen State und kennen keine Features.
+- **`libs/feature/cloud/`**: "Smart Components" für den spezifischen Business-Use-Case (hier: Word Cloud Generierung). Enthält das Feature-Routing, orchestriert die UI-Komponenten und hält lokalen Feature-State.
+- **`libs/data-access/`**: Kapselt jeglichen Kontakt zur "Außenwelt". Hier liegen API-Aufrufe, DTOs (Data Transfer Objects) und Services für externe Libraries (wie das PDF.js Parsing). Features konsumieren diese Schicht, um an Daten zu gelangen.
+
+### Visualisierung der Ordnerstruktur
+
+```text
+text-cloud-visualizer-nbg/
+├── apps/
+│   ├── text-cloud-visualizer-nbg/         # Root Angular App (Bootstrap Hülle)
+│   └── text-cloud-visualizer-nbg-e2e/     # Playwright E2E Tests
+├── libs/
+│   ├── core/                              # Globaler State, Setup
+│   ├── data-access/                       # PDF.js Service, API-Calls
+│   ├── feature/
+│   │   └── cloud/                         # Smart Components, Word-Cloud Logik
+│   └── shared/
+│       └── ui/                            # Reusable UI (Buttons, Icons)
+├── nx.json                                # Nx Workspace Konfiguration
+├── package.json                           # Zentrale Abhängigkeiten
+└── tsconfig.base.json                     # Globale TypeScript Pfade (Aliases)
 ```
 
-These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
+## GUI-Architektur & Ausbauplan (Workspace-Layout)
 
-[More about running tasks in the docs &raquo;](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+Um maximale Zeichenfläche mit schnellem Zugriff auf alle Parameter zu verbinden, folgt die Oberfläche einem **Hybrid-Layout (Topbar + einklappbares Sidepanel)**:
 
-## Add new projects
+1. **Schlanke Topbar (`52px`, permanent sichtbar):**
+   - **Links:** Toggle-Button zum Ein-/Ausblenden des Control-Panels, App-Titel und Live-Status-Badge (`isProcessing`).
+   - **Mitte / Rechts:** Format-Anpassung („Fit to Aspect“), Light-/Dark-Theme-Switch sowie direkte Export-Aktionen (**SVG** & **PNG**).
+2. **Einklappbares Sidepanel (`360px` Desktop / `Offcanvas` Mobile):**
+   - Gruppierte Parameter-Sektionen (Quelle: Text/PDF, Form & SVG-Maske, Typografie, Farbpaletten & HSL-Modi, Rotation & Stoppwörter).
+   - Einklappbar über CSS-Transition (`margin-left`), um die Zeichenfläche auf 100 % Viewport-Breite zu erweitern.
+3. **Responsive SVG-Stage (`viewBox`-Entkopplung):**
+   - `d3-cloud` rechnet auf einer festen logischen Basis (z. B. `1200 × 800`), während das `<svg>`-Element per `viewBox` und `preserveAspectRatio="xMidYMid meet"` verlustfrei mit dem Container skaliert.
+   - Kein teures D3-Neu-Rendering beim Fenster-Resize; optionale Anpassung des Seitenverhältnisses über `ResizeObserver` / `getBoundingClientRect()`.
+4. **Dynamischer State & Export-Pipeline:**
+   - **NgRx SignalStore (`CloudStore`):** Entkoppelt schnelle UI-Inputs (Slider, Textfeld) per `rxMethod` + `debounceTime(250)` von der D3-Layout-Berechnung.
+   - **Export-Service:** Serialisiert den klonierten DOM-SVG-Knoten inklusive eingebetteter Styles für verlustfreien, transparenten **SVG-Download** (optimiert für Inkscape) sowie hochskalierten **PNG-Export** über ein Offscreen-`<canvas>`.
 
-While you could add new projects to your workspace manually, you might want to leverage [Nx plugins](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) and their [code generation](https://nx.dev/features/generate-code?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) feature.
+### Detaillierter Workspace-Verzeichnisbaum
 
-Use the plugin's generator to create new projects.
-
-To generate a new application, use:
-
-```sh
-npx nx g @nx/angular:app demo
+```text
+text-cloud-visualizer-nbg/
+├── apps/
+│   ├── text-cloud-visualizer-nbg/
+│   │   └── src/
+│   │       ├── app/
+│   │       │   ├── app.component.ts                 # Root-Shell (<router-outlet>)
+│   │       │   ├── app.config.ts                    # Zoneless Setup & Core Provider
+│   │       │   └── app.routes.ts                    # Lazy-Loading der Cloud-Feature-Route
+│   │       ├── styles.scss                          # Globale Bootstrap 5 & Phosphor Imports
+│   │       └── index.html
+│   └── text-cloud-visualizer-nbg-e2e/
+├── libs/
+│   ├── core/
+│   │   └── src/lib/
+│   │       ├── config/                              # Globale Konstanten
+│   │       └── state/
+│   │           └── theme.store.ts                   # Globaler Light/Dark-Theme SignalStore
+│   ├── data-access/
+│   │   └── src/lib/
+│   │       ├── models/
+│   │       │   └── cloud-config.model.ts            # Interfaces für Wörter, Paletten, Masken
+│   │       └── services/
+│   │           ├── pdf-parser.service.ts            # Text-Extraktion via PDF.js
+│   │           ├── svg-mask.service.ts              # Parsing & Rasterisierung von SVG-Shapes
+│   │           └── cloud-export.service.ts          # DOM-SVG-Serialisierung & PNG-Canvas-Export
+│   ├── feature/
+│   │   └── cloud/
+│   │       └── src/
+│   │           ├── lib/
+│   │           │   ├── state/
+│   │           │   │   └── cloud.store.ts           # NgRx SignalStore (Inputs, Debounce, D3-Trigger)
+│   │           │   ├── containers/
+│   │           │   │   └── cloud-workspace/         # Smart Shell (Topbar, Toggle-Panel, SVG-Stage)
+│   │           │   └── components/
+│   │           │       ├── cloud-canvas/            # D3-Cloud SVG-Renderer & Zoom-Wrapper
+│   │           │       ├── source-controls/         # Text-Input, PDF-Upload & Stoppwörter
+│   │           │       ├── style-controls/          # Fonts, Farbpaletten & Winkel-Presets
+│   │           │       └── shape-controls/          # SVG-Masken-Upload & Seitenverhältnis
+│   │           └── index.ts                         # Public API der Feature-Library
+│   └── shared/
+│       └── ui/
+│           └── src/lib/
+│               ├── theme-toggle/                    # Dummer Light/Dark-Mode Button
+│               ├── workspace-topbar/                # Wiederverwendbare Header-Leiste
+│               ├── collapsible-sidebar/             # Responsives Sidepanel / Offcanvas-Wrapper
+│               └── range-slider/                    # Bootstrap-Range-Control mit Wert-Anzeige
+├── AGENTS.md                                        # Projektregeln & Architektur-Leitplanken
+├── nx.json
+├── package.json
+└── tsconfig.base.json
 ```
-
-To generate a new library, use:
-
-```sh
-npx nx g @nx/angular:lib mylib
-```
-
-You can use `npx nx list` to get a list of installed plugins. Then, run `npx nx list <plugin-name>` to learn about more specific capabilities of a particular plugin. Alternatively, [install Nx Console](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) to browse plugins and generators in your IDE.
-
-[Learn more about Nx plugins &raquo;](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) | [Browse the plugin registry &raquo;](https://nx.dev/plugin-registry?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Set up CI!
-
-### Step 1
-
-To connect to Nx Cloud, run the following command:
-
-```sh
-npx nx connect
-```
-
-Connecting to Nx Cloud ensures a [fast and scalable CI](https://nx.dev/ci/intro/why-nx-cloud?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) pipeline. It includes features such as:
-
-- [Remote caching](https://nx.dev/ci/features/remote-cache?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task distribution across multiple machines](https://nx.dev/ci/features/distribute-task-execution?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Automated e2e test splitting](https://nx.dev/ci/features/split-e2e-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task flakiness detection and rerunning](https://nx.dev/ci/features/flaky-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-### Step 2
-
-Use the following command to configure a CI workflow for your workspace:
-
-```sh
-npx nx g ci-workflow
-```
-
-[Learn more about Nx on CI](https://nx.dev/ci/intro/ci-with-nx#ready-get-started-with-your-provider?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Install Nx Console
-
-Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
-
-[Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Useful links
-
-Learn more:
-
-- [Learn more about this workspace setup](https://nx.dev/getting-started/tutorials/angular-monorepo-tutorial?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Learn about Nx on CI](https://nx.dev/ci/intro/ci-with-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Releasing Packages with Nx release](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [What are Nx plugins?](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-And join the Nx community:
-
-- [Discord](https://go.nx.dev/community)
-- [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
-- [Our Youtube channel](https://www.youtube.com/@nxdevtools)
-- [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
