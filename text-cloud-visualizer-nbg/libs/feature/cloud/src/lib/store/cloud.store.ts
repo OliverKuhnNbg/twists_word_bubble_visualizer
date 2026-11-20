@@ -1,11 +1,12 @@
-import { patchState, signalStore, withMethods, withState } from '@ngrx/signals';
 import { inject } from '@angular/core';
+import { patchState, signalStore, withMethods, withState } from '@ngrx/signals';
 import { withDevtools } from '@text-cloud-visualizer-nbg/core';
-// Importiere hier später deinen D3-Service aus der data-access oder feature library
+import { CloudWord } from '../models/cloud-word.model';
+import { CloudLayoutService } from '../services/cloud-layout.service';
 
 export interface CloudState {
   rawText: string;
-  processedWords: unknown[]; // Später: Die von D3 berechneten X/Y-Koordinaten
+  processedWords: CloudWord[];
   isProcessing: boolean;
 }
 
@@ -18,21 +19,21 @@ const initialState: CloudState = {
 export const CloudStore = signalStore(
   withDevtools('cloud'),
   withState(initialState),
-  withMethods((store) => {
+  withMethods((store, layoutService = inject(CloudLayoutService)) => {
     const processViaD3 = async (text: string): Promise<void> => {
       patchState(store, { isProcessing: true });
 
-      // Platzhalter für d3-cloud Logik
+      const words = await layoutService.calculateLayout(text);
+
       patchState(store, {
         isProcessing: false,
-        processedWords: [{ text, size: 20, x: 0, y: 0 }],
+        processedWords: words,
       });
     };
 
     return {
       processViaD3,
       setRawText(text: string): void {
-        console.log('STORE STATE:\t' + text);
         patchState(store, { rawText: text });
         processViaD3(text);
       },
