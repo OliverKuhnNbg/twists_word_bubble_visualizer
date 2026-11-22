@@ -1,0 +1,14 @@
+<button
+  type="button"
+  class="btn btn-outline-secondary d-flex align-items-center gap-2"
+  (click)="toggled.emit()"
+  [attr.aria-label]="isDark() ? 'Zu Light Mode wechseln' : 'Zu Dark Mode wechseln'"
+>
+  @if (isDark()) {
+  <i class="ph ph-sun fs-5"></i>
+  <span>Light</span>
+  } @else {
+  <i class="ph ph-moon fs-5"></i>
+  <span>Dark</span>
+  }
+</button>

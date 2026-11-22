@@ -1,0 +1,14 @@
+<header class="navbar border-bottom bg-body-tertiary px-4">
+  <span class="navbar-brand mb-0 h1 d-flex align-items-center gap-2">
+    <i class="ph ph-cloud fs-4"></i>
+    Text Cloud Visualizer
+  </span>
+
+  <div class="d-flex align-items-center gap-2">
+    <!-- Platz für spätere Feature-Actions (z. B. SVG-Export, PDF-Upload) -->
+    <lib-theme-toggle
+      [isDark]="appStore.theme() === 'dark'"
+      (toggled)="appStore.toggleTheme()"
+    ></lib-theme-toggle>
+  </div>
+</header>
